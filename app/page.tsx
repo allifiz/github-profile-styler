@@ -1,7 +1,9 @@
 'use client';
 
 import { Copy, Github, Palette, Sparkles, Wand2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import { toast } from 'sonner';
 import {
   generateMarkdown,
@@ -9,7 +11,8 @@ import {
   ThemeId,
   themes,
 } from '@/lib/generate-markdown';
-import { useMemo, useState } from 'react';
+
+type EditableProfileField = Exclude<keyof ProfileForm, 'theme'>;
 
 const defaultForm: ProfileForm = {
   name: 'Allif Izz',
@@ -26,7 +29,7 @@ const defaultForm: ProfileForm = {
 };
 
 const fields: Array<{
-  key: keyof ProfileForm;
+  key: EditableProfileField;
   label: string;
   placeholder: string;
   type?: 'input' | 'textarea';
@@ -62,7 +65,7 @@ export default function Home() {
   const [form, setForm] = useState<ProfileForm>(defaultForm);
   const markdown = useMemo(() => generateMarkdown(form), [form]);
 
-  const updateField = (key: keyof ProfileForm, value: string) => {
+  const updateField = (key: EditableProfileField, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
   };
 
@@ -123,15 +126,21 @@ export default function Home() {
                     <button
                       key={themeId}
                       type="button"
-                      onClick={() => setForm((current) => ({ ...current, theme: themeId }))}
+                      onClick={() =>
+                        setForm((current) => ({ ...current, theme: themeId }))
+                      }
                       className={`rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 ${
                         isActive
                           ? 'border-fuchsia-300 bg-fuchsia-400/15 shadow-lg shadow-fuchsia-500/10'
                           : 'border-white/10 bg-white/[0.03] hover:bg-white/[0.07]'
                       }`}
                     >
-                      <div className="font-bold">{theme.accentEmoji} {theme.label}</div>
-                      <p className="mt-1 text-sm text-slate-300">{theme.description}</p>
+                      <div className="font-bold">
+                        {theme.accentEmoji} {theme.label}
+                      </div>
+                      <p className="mt-1 text-sm text-slate-300">
+                        {theme.description}
+                      </p>
                     </button>
                   );
                 })}
@@ -141,19 +150,25 @@ export default function Home() {
             <div className="grid gap-4">
               {fields.map((field) => (
                 <label key={field.key} className="grid gap-2">
-                  <span className="text-sm font-semibold text-slate-200">{field.label}</span>
+                  <span className="text-sm font-semibold text-slate-200">
+                    {field.label}
+                  </span>
                   {field.type === 'textarea' ? (
                     <textarea
-                      value={String(form[field.key])}
-                      onChange={(event) => updateField(field.key, event.target.value)}
+                      value={form[field.key]}
+                      onChange={(event) =>
+                        updateField(field.key, event.target.value)
+                      }
                       placeholder={field.placeholder}
                       rows={field.key === 'bio' ? 4 : 3}
                       className="input min-h-24 resize-y"
                     />
                   ) : (
                     <input
-                      value={String(form[field.key])}
-                      onChange={(event) => updateField(field.key, event.target.value)}
+                      value={form[field.key]}
+                      onChange={(event) =>
+                        updateField(field.key, event.target.value)
+                      }
                       placeholder={field.placeholder}
                       className="input"
                     />
@@ -168,7 +183,9 @@ export default function Home() {
               <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                 <div>
                   <h2 className="text-xl font-bold">Live Preview</h2>
-                  <p className="text-sm text-slate-300">Preview how your README will roughly look on GitHub.</p>
+                  <p className="text-sm text-slate-300">
+                    Preview how your README will roughly look on GitHub.
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -180,8 +197,8 @@ export default function Home() {
                 </button>
               </div>
 
-              <article className="preview prose prose-invert max-w-none rounded-2xl border border-white/10 bg-[#0d0d1f] p-5">
-                <ReactMarkdown>{markdown}</ReactMarkdown>
+              <article className="preview max-w-none rounded-2xl border border-white/10 bg-[#0d0d1f] p-5">
+                <ReactMarkdown rehypePlugins={[rehypeRaw]}>{markdown}</ReactMarkdown>
               </article>
             </div>
 
@@ -189,7 +206,10 @@ export default function Home() {
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-xl font-bold">Generated Markdown</h2>
-                  <p className="text-sm text-slate-300">Copy this into <code>README.md</code> inside your GitHub profile repository.</p>
+                  <p className="text-sm text-slate-300">
+                    Copy this into <code>README.md</code> inside your GitHub
+                    profile repository.
+                  </p>
                 </div>
               </div>
               <pre className="max-h-[520px] overflow-auto rounded-2xl border border-white/10 bg-black/40 p-4 text-sm leading-6 text-slate-200">
