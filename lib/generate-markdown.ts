@@ -1,5 +1,60 @@
 export type ThemeId = 'anime-neon' | 'dark-hacker' | 'cyberpunk';
 
+export type BadgeStyle = 'flat' | 'flat-square' | 'plastic' | 'for-the-badge' | 'social';
+export type VisitorProvider = 'komarev' | 'anime-counter' | 'profile-counter';
+export type StatsTheme =
+  | 'radical'
+  | 'tokyonight'
+  | 'merko'
+  | 'dracula'
+  | 'github_dark'
+  | 'transparent'
+  | 'synthwave'
+  | 'gruvbox'
+  | 'onedark';
+
+export type PluginConfig = {
+  typingSvg: {
+    enabled: boolean;
+    font: string;
+    color: string;
+    center: boolean;
+  };
+  visitorCounter: {
+    enabled: boolean;
+    provider: VisitorProvider;
+    animeTheme: string;
+  };
+  githubStats: {
+    enabled: boolean;
+    theme: StatsTheme;
+    showIcons: boolean;
+    hideBorder: boolean;
+  };
+  topLanguages: {
+    enabled: boolean;
+    layout: 'compact' | 'normal' | 'donut';
+  };
+  streakStats: {
+    enabled: boolean;
+  };
+  trophy: {
+    enabled: boolean;
+    theme: StatsTheme;
+    columns: number;
+  };
+  quote: {
+    enabled: boolean;
+    type: 'horizontal' | 'vertical';
+  };
+  devJoke: {
+    enabled: boolean;
+  };
+  socialBadges: {
+    enabled: boolean;
+  };
+};
+
 export type ProfileForm = {
   name: string;
   username: string;
@@ -9,9 +64,16 @@ export type ProfileForm = {
   website: string;
   twitter: string;
   linkedin: string;
+  email: string;
+  instagram: string;
+  discord: string;
   techStack: string;
   typingLines: string;
   theme: ThemeId;
+  badgeStyle: BadgeStyle;
+  badgeColor: string;
+  logoColor: string;
+  plugins: PluginConfig;
 };
 
 export const themes: Record<
@@ -19,7 +81,7 @@ export const themes: Record<
   {
     label: string;
     description: string;
-    readmeTheme: string;
+    readmeTheme: StatsTheme;
     badgeColor: string;
     accentEmoji: string;
   }
@@ -47,6 +109,48 @@ export const themes: Record<
   },
 };
 
+export const defaultPlugins: PluginConfig = {
+  typingSvg: {
+    enabled: true,
+    font: 'Fira Code',
+    color: 'ff4ecd',
+    center: true,
+  },
+  visitorCounter: {
+    enabled: true,
+    provider: 'komarev',
+    animeTheme: 'rule34',
+  },
+  githubStats: {
+    enabled: true,
+    theme: 'radical',
+    showIcons: true,
+    hideBorder: true,
+  },
+  topLanguages: {
+    enabled: true,
+    layout: 'compact',
+  },
+  streakStats: {
+    enabled: true,
+  },
+  trophy: {
+    enabled: false,
+    theme: 'radical',
+    columns: 6,
+  },
+  quote: {
+    enabled: false,
+    type: 'horizontal',
+  },
+  devJoke: {
+    enabled: false,
+  },
+  socialBadges: {
+    enabled: true,
+  },
+};
+
 const normalizeLines = (value: string) =>
   value
     .split('\n')
@@ -60,9 +164,64 @@ const normalizeTechStack = (value: string) =>
     .filter(Boolean);
 
 const encodeTypingLine = (line: string) => encodeURIComponent(line).replace(/%20/g, '+');
+const encodeBadgeText = (value: string) => encodeURIComponent(value).replace(/-/g, '--');
 
 const badgeLogo = (tech: string) =>
   encodeURIComponent(tech.toLowerCase().replace(/\./g, 'dot').replace(/\s+/g, '-'));
+
+const cleanColor = (color: string, fallback: string) => color.trim().replace('#', '') || fallback;
+
+const renderSection = (title: string, content: string) => `## ${title}\n\n${content}`;
+
+const renderCenteredImage = (src: string, alt: string, extra = '') => `<p align="center">\n  <img ${extra} src="${src}" alt="${alt}" />\n</p>`;
+
+const generateVisitorCounter = (username: string, form: ProfileForm, selectedTheme: (typeof themes)[ThemeId]) => {
+  const provider = form.plugins.visitorCounter.provider;
+
+  if (provider === 'anime-counter') {
+    return renderCenteredImage(
+      `https://count.getloli.com/get/@${username}?theme=${form.plugins.visitorCounter.animeTheme}`,
+      'Visitor counter',
+    );
+  }
+
+  if (provider === 'profile-counter') {
+    return renderCenteredImage(
+      `https://profile-counter.glitch.me/${username}/count.svg`,
+      'Visitor counter',
+    );
+  }
+
+  return `<p align="center">\n  <img src="https://komarev.com/ghpvc/?username=${username}&label=Profile%20views&color=${selectedTheme.badgeColor}&style=${form.badgeStyle}" alt="Profile views" />\n  <img src="https://img.shields.io/github/followers/${username}?label=Followers&style=social" alt="GitHub followers" />\n</p>`;
+};
+
+const generateSocialBadges = (form: ProfileForm, badgeColor: string, logoColor: string) => {
+  const style = form.badgeStyle;
+  const badges = [
+    form.website
+      ? `<a href="${form.website}"><img src="https://img.shields.io/badge/Website-${badgeColor}?style=${style}&logo=google-chrome&logoColor=${logoColor}" /></a>`
+      : '',
+    form.linkedin
+      ? `<a href="https://linkedin.com/in/${form.linkedin.replace('@', '')}"><img src="https://img.shields.io/badge/LinkedIn-${badgeColor}?style=${style}&logo=linkedin&logoColor=${logoColor}" /></a>`
+      : '',
+    form.twitter
+      ? `<a href="https://x.com/${form.twitter.replace('@', '')}"><img src="https://img.shields.io/badge/Twitter/X-${badgeColor}?style=${style}&logo=x&logoColor=${logoColor}" /></a>`
+      : '',
+    form.instagram
+      ? `<a href="https://instagram.com/${form.instagram.replace('@', '')}"><img src="https://img.shields.io/badge/Instagram-${badgeColor}?style=${style}&logo=instagram&logoColor=${logoColor}" /></a>`
+      : '',
+    form.email
+      ? `<a href="mailto:${form.email}"><img src="https://img.shields.io/badge/Email-${badgeColor}?style=${style}&logo=gmail&logoColor=${logoColor}" /></a>`
+      : '',
+    form.discord
+      ? `<img src="https://img.shields.io/badge/Discord-${encodeBadgeText(form.discord)}-${badgeColor}?style=${style}&logo=discord&logoColor=${logoColor}" />`
+      : '',
+  ].filter(Boolean);
+
+  if (!badges.length) return '';
+
+  return `<p align="center">\n  ${badges.join('\n  ')}\n</p>`;
+};
 
 export function generateMarkdown(form: ProfileForm) {
   const selectedTheme = themes[form.theme];
@@ -74,66 +233,134 @@ export function generateMarkdown(form: ProfileForm) {
   const website = form.website.trim();
   const twitter = form.twitter.trim();
   const linkedin = form.linkedin.trim();
+  const email = form.email.trim();
+  const instagram = form.instagram.trim();
+  const discord = form.discord.trim();
   const typingLines = normalizeLines(form.typingLines || role);
   const techStack = normalizeTechStack(form.techStack || 'JavaScript, TypeScript, React, Node.js');
   const typingQuery = typingLines.map(encodeTypingLine).join(';');
+  const badgeColor = cleanColor(form.badgeColor, selectedTheme.badgeColor);
+  const logoColor = cleanColor(form.logoColor, 'white');
+  const statsTheme = form.plugins.githubStats.theme || selectedTheme.readmeTheme;
 
-  const techBadges = techStack
-    .map(
-      (tech) =>
-        `![${tech}](https://img.shields.io/badge/${encodeURIComponent(
-          tech,
-        )}-111827?style=for-the-badge&logo=${badgeLogo(tech)}&logoColor=white)`,
-    )
-    .join('\n');
+  const sections: string[] = [];
+
+  sections.push(`<h1 align="center">${selectedTheme.accentEmoji} Hi, I'm ${name}</h1>`);
+
+  if (form.plugins.typingSvg.enabled) {
+    const font = encodeURIComponent(form.plugins.typingSvg.font || 'Fira Code').replace(/%20/g, '+');
+    const typingColor = cleanColor(form.plugins.typingSvg.color, badgeColor);
+    const center = form.plugins.typingSvg.center ? 'true' : 'false';
+    sections.push(
+      renderCenteredImage(
+        `https://readme-typing-svg.demolab.com?font=${font}&pause=1000&color=${typingColor}&center=${center}&width=520&lines=${typingQuery}`,
+        'Typing SVG',
+      ),
+    );
+  }
+
+  if (form.plugins.visitorCounter.enabled) {
+    sections.push(generateVisitorCounter(username, form, selectedTheme));
+  }
+
+  const socialBadges = form.plugins.socialBadges.enabled
+    ? generateSocialBadges({ ...form, website, twitter, linkedin, email, instagram, discord }, badgeColor, logoColor)
+    : '';
+
+  if (socialBadges) sections.push(socialBadges);
+
+  sections.push('---');
 
   const socialLinks = [
     website ? `- 🌐 Website: ${website}` : '',
     twitter ? `- 🐦 Twitter/X: https://x.com/${twitter.replace('@', '')}` : '',
     linkedin ? `- 💼 LinkedIn: https://linkedin.com/in/${linkedin.replace('@', '')}` : '',
+    instagram ? `- 📸 Instagram: https://instagram.com/${instagram.replace('@', '')}` : '',
+    email ? `- ✉️ Email: ${email}` : '',
+    discord ? `- 💬 Discord: ${discord}` : '',
     location ? `- 📍 Location: ${location}` : '',
   ]
     .filter(Boolean)
     .join('\n');
 
-  return `<h1 align="center">${selectedTheme.accentEmoji} Hi, I'm ${name}</h1>
+  sections.push(renderSection(`${selectedTheme.accentEmoji} About Me`, `${bio}\n\n${socialLinks}`.trim()));
 
-<p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&pause=1000&center=true&width=520&lines=${typingQuery}" alt="Typing SVG" />
-</p>
+  const techBadges = techStack
+    .map(
+      (tech) =>
+        `![${tech}](https://img.shields.io/badge/${encodeBadgeText(tech)}-${badgeColor}?style=${form.badgeStyle}&logo=${badgeLogo(tech)}&logoColor=${logoColor})`,
+    )
+    .join('\n');
 
-<p align="center">
-  <img src="https://komarev.com/ghpvc/?username=${username}&label=Profile%20views&color=${selectedTheme.badgeColor}&style=flat" alt="Profile views" />
-  <img src="https://img.shields.io/github/followers/${username}?label=Followers&style=social" alt="GitHub followers" />
-</p>
+  if (techBadges) {
+    sections.push(renderSection('⚙️ Tech Stack', techBadges));
+  }
 
----
+  const statImages: string[] = [];
 
-## ${selectedTheme.accentEmoji} About Me
+  if (form.plugins.githubStats.enabled) {
+    statImages.push(
+      `<img height="170" src="https://github-readme-stats.vercel.app/api?username=${username}&show_icons=${form.plugins.githubStats.showIcons}&theme=${statsTheme}&hide_border=${form.plugins.githubStats.hideBorder}" alt="GitHub stats" />`,
+    );
+  }
 
-${bio}
+  if (form.plugins.topLanguages.enabled) {
+    statImages.push(
+      `<img height="170" src="https://github-readme-stats.vercel.app/api/top-langs/?username=${username}&layout=${form.plugins.topLanguages.layout}&theme=${statsTheme}&hide_border=${form.plugins.githubStats.hideBorder}" alt="Top languages" />`,
+    );
+  }
 
-${socialLinks ? `${socialLinks}\n` : ''}
-## ⚙️ Tech Stack
+  if (statImages.length) {
+    sections.push(renderSection('📊 GitHub Stats', `<p align="center">\n  ${statImages.join('\n  ')}\n</p>`));
+  }
 
-${techBadges}
+  if (form.plugins.streakStats.enabled) {
+    sections.push(
+      renderSection(
+        '🔥 Contribution Streak',
+        renderCenteredImage(
+          `https://streak-stats.demolab.com?user=${username}&theme=${statsTheme}&hide_border=${form.plugins.githubStats.hideBorder}`,
+          'GitHub streak',
+        ),
+      ),
+    );
+  }
 
-## 📊 GitHub Stats
+  if (form.plugins.trophy.enabled) {
+    sections.push(
+      renderSection(
+        '🏆 GitHub Trophy',
+        renderCenteredImage(
+          `https://github-profile-trophy.vercel.app/?username=${username}&theme=${form.plugins.trophy.theme}&no-frame=true&row=1&column=${form.plugins.trophy.columns}`,
+          'GitHub trophy',
+        ),
+      ),
+    );
+  }
 
-<p align="center">
-  <img height="170" src="https://github-readme-stats.vercel.app/api?username=${username}&show_icons=true&theme=${selectedTheme.readmeTheme}&hide_border=true" alt="GitHub stats" />
-  <img height="170" src="https://github-readme-stats.vercel.app/api/top-langs/?username=${username}&layout=compact&theme=${selectedTheme.readmeTheme}&hide_border=true" alt="Top languages" />
-</p>
+  if (form.plugins.quote.enabled) {
+    sections.push(
+      renderSection(
+        '💭 Dev Quote',
+        renderCenteredImage(
+          `https://quotes-github-readme.vercel.app/api?type=${form.plugins.quote.type}&theme=${statsTheme}`,
+          'Dev quote',
+        ),
+      ),
+    );
+  }
 
-## 🔥 Contribution Streak
+  if (form.plugins.devJoke.enabled) {
+    sections.push(
+      renderSection(
+        '😂 Random Dev Joke',
+        renderCenteredImage(`https://readme-jokes.vercel.app/api?theme=${statsTheme}`, 'Dev joke'),
+      ),
+    );
+  }
 
-<p align="center">
-  <img src="https://streak-stats.demolab.com?user=${username}&theme=${selectedTheme.readmeTheme}&hide_border=true" alt="GitHub streak" />
-</p>
+  sections.push('---');
+  sections.push('<p align="center">\n  <i>Generated with GitHub Profile Styler</i>\n</p>');
 
----
-
-<p align="center">
-  <i>Generated with GitHub Profile Styler</i>
-</p>`;
+  return sections.filter(Boolean).join('\n\n');
 }
