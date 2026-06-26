@@ -9,6 +9,8 @@ export type SectionId =
   | 'githubStats'
   | 'streakStats'
   | 'trophy'
+  | 'advancedStats'
+  | 'cyberpunkTopLanguages'
   | 'quote'
   | 'devJoke';
 export type StatsTheme =
@@ -52,6 +54,10 @@ export type PluginConfig = {
     theme: StatsTheme;
     columns: number;
   };
+  advancedStats: {
+    city3d: boolean;
+    cyberpunkTopLanguages: boolean;
+  };
   quote: {
     enabled: boolean;
     type: 'horizontal' | 'vertical';
@@ -93,6 +99,8 @@ export const defaultSectionOrder: SectionId[] = [
   'githubStats',
   'streakStats',
   'trophy',
+  'advancedStats',
+  'cyberpunkTopLanguages',
   'quote',
   'devJoke',
 ];
@@ -159,6 +167,10 @@ export const defaultPlugins: PluginConfig = {
     enabled: false,
     theme: 'radical',
     columns: 6,
+  },
+  advancedStats: {
+    city3d: false,
+    cyberpunkTopLanguages: false,
   },
   quote: {
     enabled: false,
@@ -372,6 +384,32 @@ export function generateMarkdown(form: ProfileForm) {
         renderCenteredImage(
           `https://github-profile-trophy.vercel.app/?username=${username}&theme=${trophyTheme}&no-frame=true&row=1&column=${trophyColumns}`,
           'GitHub trophy',
+        ),
+      ),
+    );
+  }
+
+  if (form.plugins.advancedStats.city3d) {
+    sectionMap.set(
+      'advancedStats',
+      renderSection(
+        '🏙️ 3D City Contribution View',
+        `${renderCenteredImage(
+          `https://raw.githubusercontent.com/${username}/${username}/main/profile-3d-contrib/profile-night-rainbow.svg`,
+          '3D city contribution view',
+        )}\n\n> This requires the github-profile-3d-contrib workflow in your profile repository.`,
+      ),
+    );
+  }
+
+  if (form.plugins.advancedStats.cyberpunkTopLanguages) {
+    sectionMap.set(
+      'cyberpunkTopLanguages',
+      renderSection(
+        '🌌 CyberPunk Top Languages',
+        renderCenteredImage(
+          `https://github-readme-stats.vercel.app/api/top-langs/?username=${username}&layout=compact&hide_border=true&bg_color=0d1117&title_color=ff00ff&text_color=00ffff&icon_color=00ffff`,
+          'CyberPunk top languages',
         ),
       ),
     );
