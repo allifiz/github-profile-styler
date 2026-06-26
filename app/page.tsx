@@ -66,6 +66,28 @@ const visitorProviders: Array<{ label: string; value: VisitorProvider }> = [
   { label: 'Classic profile counter', value: 'profile-counter' },
 ];
 
+const animeCounterThemes = [
+  { label: 'Moebooru', value: 'moebooru' },
+  { label: 'Original New', value: 'original-new' },
+  { label: 'Gelbooru', value: 'gelbooru' },
+  { label: 'Asoul', value: 'asoul' },
+  { label: 'Minecraft', value: 'minecraft' },
+  { label: 'Kasuterura', value: 'kasuterura' },
+  { label: 'Kyun', value: 'kyun' },
+  { label: 'Rule34', value: 'rule34' },
+];
+
+const typingFonts = [
+  'Fira Code',
+  'JetBrains Mono',
+  'Poppins',
+  'Roboto Mono',
+  'Source Code Pro',
+  'Cascadia Code',
+  'Space Mono',
+  'Ubuntu Mono',
+];
+
 const defaultForm: ProfileForm = {
   name: 'Allif Izz',
   username: 'allifiz',
@@ -84,7 +106,13 @@ const defaultForm: ProfileForm = {
   badgeStyle: 'for-the-badge',
   badgeColor: '111827',
   logoColor: 'white',
-  plugins: defaultPlugins,
+  plugins: {
+    ...defaultPlugins,
+    visitorCounter: {
+      ...defaultPlugins.visitorCounter,
+      animeTheme: 'moebooru',
+    },
+  },
 };
 
 const recommendedPlugins: Array<{
@@ -132,7 +160,6 @@ const extraPlugins: Array<{
   key: PluginKey;
   title: string;
   description: string;
-  badge?: string;
 }> = [
   {
     key: 'trophy',
@@ -206,6 +233,16 @@ const linkFields: Array<{
   { key: 'discord', label: 'Discord tag', placeholder: 'allif#0001' },
 ];
 
+const normalizeHex = (value: string) => value.replace('#', '').slice(0, 6);
+
+const toPickerColor = (value: string, fallback: string) => {
+  const cleanValue = normalizeHex(value);
+  const cleanFallback = normalizeHex(fallback);
+  const hex = /^[0-9a-fA-F]{6}$/.test(cleanValue) ? cleanValue : cleanFallback;
+
+  return `#${hex}`;
+};
+
 function PanelHeader({
   eyebrow,
   title,
@@ -260,6 +297,41 @@ function FormInput({
           className="input"
         />
       )}
+      {helper ? <span className="text-xs leading-5 text-slate-400">{helper}</span> : null}
+    </label>
+  );
+}
+
+function ColorInput({
+  label,
+  value,
+  fallback,
+  helper,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  fallback: string;
+  helper?: string;
+  onChange: (value: string) => void;
+}) {
+  const pickerValue = toPickerColor(value, fallback);
+
+  return (
+    <label className="grid gap-2">
+      <span className="text-sm font-bold text-slate-100">{label}</span>
+      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-3">
+        <input
+          type="color"
+          value={pickerValue}
+          onChange={(event) => onChange(event.target.value.replace('#', ''))}
+          className="h-11 w-16 cursor-pointer rounded-xl border border-white/10 bg-transparent p-1"
+        />
+        <div>
+          <div className="font-mono text-sm font-bold text-white">{pickerValue}</div>
+          <p className="text-xs text-slate-400">Click the color box to change it</p>
+        </div>
+      </div>
       {helper ? <span className="text-xs leading-5 text-slate-400">{helper}</span> : null}
     </label>
   );
@@ -571,18 +643,18 @@ export default function Home() {
                         setForm((current) => ({ ...current, badgeStyle: value as BadgeStyle }))
                       }
                     />
-                    <FormInput
+                    <ColorInput
                       label="Badge color"
                       value={form.badgeColor}
-                      placeholder={selectedTheme.badgeColor}
-                      helper="Use hex color without #, for example ff4ecd or 111827."
+                      fallback={selectedTheme.badgeColor}
+                      helper="Used for tech stack and social badges."
                       onChange={(value) => setForm((current) => ({ ...current, badgeColor: value }))}
                     />
                     <FormInput
                       label="Logo color"
                       value={form.logoColor}
                       placeholder="white"
-                      helper="Usually white is safest."
+                      helper="Usually white is safest. You can also use black or another hex value."
                       onChange={(value) => setForm((current) => ({ ...current, logoColor: value }))}
                     />
                   </div>
@@ -622,7 +694,6 @@ export default function Home() {
                         enabled={form.plugins[plugin.key].enabled}
                         title={plugin.title}
                         description={plugin.description}
-                        badge={plugin.badge}
                         onToggle={() => togglePlugin(plugin.key)}
                       />
                     ))}
@@ -649,11 +720,11 @@ export default function Home() {
                         updatePlugin('visitorCounter', { provider: value as VisitorProvider })
                       }
                     />
-                    <FormInput
+                    <FormSelect
                       label="Anime counter theme"
                       value={form.plugins.visitorCounter.animeTheme}
-                      placeholder="rule34"
-                      helper="Used only when Anime Counter is selected. Example: rule34."
+                      options={animeCounterThemes}
+                      helper="Used only when Anime Counter is selected. Moebooru and Original New are safer defaults."
                       onChange={(value) => updatePlugin('visitorCounter', { animeTheme: value })}
                     />
                   </div>
@@ -688,16 +759,18 @@ export default function Home() {
 
                   <div className="grid gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
                     <h3 className="font-black text-cyan-100">Typing & quote settings</h3>
-                    <FormInput
+                    <FormSelect
                       label="Typing SVG font"
                       value={form.plugins.typingSvg.font}
-                      placeholder="Fira Code"
+                      options={typingFonts}
+                      helper="Choose a readable coding font for the typing animation."
                       onChange={(value) => updatePlugin('typingSvg', { font: value })}
                     />
-                    <FormInput
+                    <ColorInput
                       label="Typing SVG color"
                       value={form.plugins.typingSvg.color}
-                      placeholder="ff4ecd"
+                      fallback={selectedTheme.badgeColor}
+                      helper="Controls the animated typing text color."
                       onChange={(value) => updatePlugin('typingSvg', { color: value })}
                     />
                     <FormSelect
