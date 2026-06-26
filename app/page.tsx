@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, ExternalLink, Palette, Plug, Sparkles, Wand2 } from 'lucide-react';
+import { Copy, ExternalLink, GripVertical, Palette, Plug, Sparkles, Wand2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -8,8 +8,10 @@ import { toast } from 'sonner';
 import {
   BadgeStyle,
   defaultPlugins,
+  defaultSectionOrder,
   generateMarkdown,
   ProfileForm,
+  SectionId,
   StatsTheme,
   ThemeId,
   themes,
@@ -88,6 +90,41 @@ const typingFonts = [
   'Ubuntu Mono',
 ];
 
+const sectionCards: Record<SectionId, { title: string; description: string }> = {
+  hero: {
+    title: 'Intro / Hero',
+    description: 'Name, typing SVG, visitor counter, and social badges.',
+  },
+  about: {
+    title: 'About Me',
+    description: 'Bio, location, and text social links.',
+  },
+  techStack: {
+    title: 'Tech Stack',
+    description: 'Generated technology badges.',
+  },
+  githubStats: {
+    title: 'GitHub Stats',
+    description: 'Stats card and top languages card.',
+  },
+  streakStats: {
+    title: 'Contribution Streak',
+    description: 'GitHub streak card.',
+  },
+  trophy: {
+    title: 'GitHub Trophy',
+    description: 'Achievement trophy row.',
+  },
+  quote: {
+    title: 'Dev Quote',
+    description: 'Random developer quote card.',
+  },
+  devJoke: {
+    title: 'Dev Joke',
+    description: 'Random developer joke card.',
+  },
+};
+
 const defaultForm: ProfileForm = {
   name: 'Allif Izz',
   username: 'allifiz',
@@ -106,6 +143,7 @@ const defaultForm: ProfileForm = {
   badgeStyle: 'for-the-badge',
   badgeColor: '111827',
   logoColor: 'white',
+  sectionOrder: defaultSectionOrder,
   plugins: {
     ...defaultPlugins,
     visitorCounter: {
@@ -428,6 +466,7 @@ function PluginCard({
 export default function Home() {
   const [form, setForm] = useState<ProfileForm>(defaultForm);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
+  const [draggingSection, setDraggingSection] = useState<SectionId | null>(null);
   const markdown = useMemo(() => generateMarkdown(form), [form]);
 
   const updateField = (key: EditableProfileField, value: string) => {
@@ -449,6 +488,26 @@ export default function Home() {
 
   const togglePlugin = (plugin: PluginKey) => {
     updatePlugin(plugin, { enabled: !form.plugins[plugin].enabled });
+  };
+
+  const moveSection = (fromSection: SectionId, toSection: SectionId) => {
+    if (fromSection === toSection) return;
+
+    setForm((current) => {
+      const nextOrder = [...current.sectionOrder];
+      const fromIndex = nextOrder.indexOf(fromSection);
+      const toIndex = nextOrder.indexOf(toSection);
+
+      if (fromIndex === -1 || toIndex === -1) return current;
+
+      const [removed] = nextOrder.splice(fromIndex, 1);
+      nextOrder.splice(toIndex, 0, removed);
+
+      return {
+        ...current,
+        sectionOrder: nextOrder,
+      };
+    });
   };
 
   const copyMarkdown = async () => {
@@ -475,7 +534,7 @@ export default function Home() {
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
                 Build a clean profile README step by step. Start with your profile,
-                choose a design, turn on plugins, then copy the markdown.
+                choose a design, turn on plugins, reorder sections, then copy the markdown.
               </p>
             </div>
 
@@ -791,7 +850,7 @@ export default function Home() {
                 <div>
                   <h2 className="text-xl font-black">Live Preview</h2>
                   <p className="text-sm text-slate-300">
-                    This is a close preview. GitHub may render external cards slightly differently.
+                    Drag the section cards below to reorder your README.
                   </p>
                 </div>
                 <button
@@ -802,6 +861,73 @@ export default function Home() {
                   <Copy size={18} />
                   Copy
                 </button>
+              </div>
+
+              <div className="mb-4 rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="mb-3 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                  <div>
+                    <h3 className="font-black">Section Order</h3>
+                    <p className="text-xs text-slate-400">
+                      Drag a section, drop it above another section, then preview updates instantly.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((current) => ({
+                        ...current,
+                        sectionOrder: defaultSectionOrder,
+                      }))
+                    }
+                    className="rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-xs font-bold text-slate-200 transition hover:bg-white/15"
+                  >
+                    Reset order
+                  </button>
+                </div>
+
+                <div className="grid gap-2">
+                  {form.sectionOrder.map((sectionId, index) => {
+                    const section = sectionCards[sectionId];
+                    const isDragging = draggingSection === sectionId;
+
+                    return (
+                      <div
+                        key={sectionId}
+                        draggable
+                        onDragStart={(event) => {
+                          event.dataTransfer.effectAllowed = 'move';
+                          event.dataTransfer.setData('text/plain', sectionId);
+                          setDraggingSection(sectionId);
+                        }}
+                        onDragEnd={() => setDraggingSection(null)}
+                        onDragOver={(event) => {
+                          event.preventDefault();
+                          event.dataTransfer.dropEffect = 'move';
+                        }}
+                        onDrop={(event) => {
+                          event.preventDefault();
+                          const draggedSection = event.dataTransfer.getData('text/plain') as SectionId;
+                          moveSection(draggedSection, sectionId);
+                          setDraggingSection(null);
+                        }}
+                        className={`group flex cursor-grab items-center gap-3 rounded-2xl border p-3 transition active:cursor-grabbing ${
+                          isDragging
+                            ? 'border-fuchsia-300 bg-fuchsia-400/20 opacity-60'
+                            : 'border-white/10 bg-white/[0.04] hover:border-cyan-300/60 hover:bg-cyan-400/10'
+                        }`}
+                      >
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-xs font-black text-slate-200">
+                          {index + 1}
+                        </div>
+                        <GripVertical className="shrink-0 text-slate-400 transition group-hover:text-cyan-200" size={18} />
+                        <div className="min-w-0">
+                          <div className="font-bold text-white">{section.title}</div>
+                          <p className="truncate text-xs text-slate-400">{section.description}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               <article className="preview max-h-[620px] min-w-0 max-w-full overflow-auto rounded-2xl border border-white/10 bg-[#0d0d1f] p-5">
