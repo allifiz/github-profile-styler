@@ -10,7 +10,6 @@ export type SectionId =
   | 'streakStats'
   | 'trophy'
   | 'advancedStats'
-  | 'cyberpunkTopLanguages'
   | 'quote'
   | 'devJoke';
 export type StatsTheme =
@@ -56,7 +55,6 @@ export type PluginConfig = {
   };
   advancedStats: {
     city3d: boolean;
-    cyberpunkTopLanguages: boolean;
   };
   quote: {
     enabled: boolean;
@@ -100,7 +98,6 @@ export const defaultSectionOrder: SectionId[] = [
   'streakStats',
   'trophy',
   'advancedStats',
-  'cyberpunkTopLanguages',
   'quote',
   'devJoke',
 ];
@@ -170,7 +167,6 @@ export const defaultPlugins: PluginConfig = {
   },
   advancedStats: {
     city3d: false,
-    cyberpunkTopLanguages: false,
   },
   quote: {
     enabled: false,
@@ -394,22 +390,9 @@ export function generateMarkdown(form: ProfileForm) {
       'advancedStats',
       renderSection(
         '🏙️ 3D City Contribution View',
-        `${renderCenteredImage(
+        renderCenteredImage(
           `https://raw.githubusercontent.com/${username}/${username}/main/profile-3d-contrib/profile-night-rainbow.svg`,
           '3D city contribution view',
-        )}\n\n> This requires the github-profile-3d-contrib workflow in your profile repository.`,
-      ),
-    );
-  }
-
-  if (form.plugins.advancedStats.cyberpunkTopLanguages) {
-    sectionMap.set(
-      'cyberpunkTopLanguages',
-      renderSection(
-        '🌌 CyberPunk Top Languages',
-        renderCenteredImage(
-          `https://github-readme-stats.vercel.app/api/top-langs/?username=${username}&layout=compact&hide_border=true&bg_color=0d1117&title_color=ff00ff&text_color=00ffff&icon_color=00ffff`,
-          'CyberPunk top languages',
         ),
       ),
     );
