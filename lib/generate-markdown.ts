@@ -2,6 +2,13 @@ export type ThemeId = 'anime-neon' | 'dark-hacker' | 'cyberpunk';
 
 export type BadgeStyle = 'flat' | 'flat-square' | 'plastic' | 'for-the-badge' | 'social';
 export type VisitorProvider = 'komarev' | 'anime-counter' | 'profile-counter';
+export type City3DTheme =
+  | 'night-rainbow'
+  | 'night-green'
+  | 'night-view'
+  | 'green'
+  | 'gitblock'
+  | 'season';
 export type SectionId =
   | 'hero'
   | 'about'
@@ -55,6 +62,7 @@ export type PluginConfig = {
   };
   advancedStats: {
     city3d: boolean;
+    city3dTheme: City3DTheme;
   };
   quote: {
     enabled: boolean;
@@ -167,6 +175,7 @@ export const defaultPlugins: PluginConfig = {
   },
   advancedStats: {
     city3d: false,
+    city3dTheme: 'night-rainbow',
   },
   quote: {
     enabled: false,
@@ -178,6 +187,15 @@ export const defaultPlugins: PluginConfig = {
   socialBadges: {
     enabled: true,
   },
+};
+
+const city3dFileMap: Record<City3DTheme, string> = {
+  'night-rainbow': 'profile-night-rainbow.svg',
+  'night-green': 'profile-night-green.svg',
+  'night-view': 'profile-night-view.svg',
+  green: 'profile-green.svg',
+  gitblock: 'profile-gitblock.svg',
+  season: 'profile-season-animate.svg',
 };
 
 const trophyThemeMap: Record<string, string> = {
@@ -212,6 +230,7 @@ const badgeLogo = (tech: string) =>
 
 const cleanColor = (color: string, fallback: string) => color.trim().replace('#', '') || fallback;
 const cleanTrophyTheme = (theme: string) => trophyThemeMap[theme] || 'radical';
+const cleanCity3DTheme = (theme?: City3DTheme) => theme && city3dFileMap[theme] ? theme : 'night-rainbow';
 const cleanTrophyColumns = (columns: number) => {
   if (!Number.isFinite(columns)) return 6;
   return Math.min(Math.max(Math.round(columns), 3), 8);
@@ -386,12 +405,15 @@ export function generateMarkdown(form: ProfileForm) {
   }
 
   if (form.plugins.advancedStats.city3d) {
+    const cityTheme = cleanCity3DTheme(form.plugins.advancedStats.city3dTheme);
+    const cityFile = city3dFileMap[cityTheme];
+
     sectionMap.set(
       'advancedStats',
       renderSection(
         '🏙️ 3D City Contribution View',
         renderCenteredImage(
-          `https://raw.githubusercontent.com/${username}/${username}/main/profile-3d-contrib/profile-night-rainbow.svg`,
+          `https://raw.githubusercontent.com/${username}/${username}/main/profile-3d-contrib/${cityFile}`,
           '3D city contribution view',
         ),
       ),
