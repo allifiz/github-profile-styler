@@ -19,8 +19,14 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
+}
+
+button,
+summary {
+  -webkit-tap-highlight-color: transparent;
 }
 
 .neon-text {
@@ -50,6 +56,15 @@ textarea {
   border-color: rgba(244, 114, 182, 0.75);
   background: rgba(255, 255, 255, 0.09);
   box-shadow: 0 0 0 4px rgba(244, 114, 182, 0.12);
+}
+
+select.input option {
+  background: #111122;
+  color: white;
+}
+
+summary::marker {
+  color: #f0abfc;
 }
 
 .preview {
