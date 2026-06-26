@@ -3,12 +3,16 @@ export type ThemeId = 'anime-neon' | 'dark-hacker' | 'cyberpunk';
 export type BadgeStyle = 'flat' | 'flat-square' | 'plastic' | 'for-the-badge' | 'social';
 export type VisitorProvider = 'komarev' | 'anime-counter' | 'profile-counter';
 export type City3DTheme =
-  | 'night-rainbow'
-  | 'night-green'
-  | 'night-view'
-  | 'green'
   | 'gitblock'
-  | 'season';
+  | 'green-animate'
+  | 'green'
+  | 'night-green'
+  | 'night-rainbow'
+  | 'night-view'
+  | 'season-animate'
+  | 'season'
+  | 'south-season-animate'
+  | 'south-season';
 export type SectionId =
   | 'hero'
   | 'about'
@@ -190,12 +194,16 @@ export const defaultPlugins: PluginConfig = {
 };
 
 const city3dFileMap: Record<City3DTheme, string> = {
-  'night-rainbow': 'profile-night-rainbow.svg',
-  'night-green': 'profile-night-green.svg',
-  'night-view': 'profile-night-view.svg',
-  green: 'profile-green.svg',
   gitblock: 'profile-gitblock.svg',
-  season: 'profile-season-animate.svg',
+  'green-animate': 'profile-green-animate.svg',
+  green: 'profile-green.svg',
+  'night-green': 'profile-night-green.svg',
+  'night-rainbow': 'profile-night-rainbow.svg',
+  'night-view': 'profile-night-view.svg',
+  'season-animate': 'profile-season-animate.svg',
+  season: 'profile-season.svg',
+  'south-season-animate': 'profile-south-season-animate.svg',
+  'south-season': 'profile-south-season.svg',
 };
 
 const trophyThemeMap: Record<string, string> = {
