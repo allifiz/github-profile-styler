@@ -1,6 +1,6 @@
 'use client';
 
-import { Copy, Github, Palette, Sparkles, Wand2 } from 'lucide-react';
+import { Copy, ExternalLink, Palette, Sparkles, Wand2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -101,7 +101,7 @@ export default function Home() {
             rel="noreferrer"
             className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-semibold transition hover:-translate-y-0.5 hover:bg-white/15"
           >
-            <Github size={20} />
+            <ExternalLink size={20} />
             Star on GitHub
           </a>
         </header>
