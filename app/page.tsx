@@ -106,8 +106,8 @@ export default function Home() {
           </a>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[420px_minmax(0,1fr)]">
-          <aside className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur">
+        <div className="grid w-full min-w-0 gap-6 lg:grid-cols-[420px_minmax(0,1fr)]">
+          <aside className="min-w-0 rounded-3xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur">
             <div className="mb-5 flex items-center gap-2">
               <Wand2 className="text-fuchsia-300" size={22} />
               <h2 className="text-xl font-bold">Customize Profile</h2>
@@ -178,8 +178,8 @@ export default function Home() {
             </div>
           </aside>
 
-          <section className="grid gap-6">
-            <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur">
+          <section className="grid min-w-0 gap-6">
+            <div className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur">
               <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                 <div>
                   <h2 className="text-xl font-bold">Live Preview</h2>
@@ -197,12 +197,12 @@ export default function Home() {
                 </button>
               </div>
 
-              <article className="preview max-w-none rounded-2xl border border-white/10 bg-[#0d0d1f] p-5">
+              <article className="preview min-w-0 max-w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d1f] p-5">
                 <ReactMarkdown rehypePlugins={[rehypeRaw]}>{markdown}</ReactMarkdown>
               </article>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-[#0d0d1f] p-5">
+            <div className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-[#0d0d1f] p-5">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
                   <h2 className="text-xl font-bold">Generated Markdown</h2>
@@ -212,7 +212,7 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <pre className="max-h-[520px] overflow-auto rounded-2xl border border-white/10 bg-black/40 p-4 text-sm leading-6 text-slate-200">
+              <pre className="max-h-[520px] max-w-full overflow-auto whitespace-pre-wrap break-words rounded-2xl border border-white/10 bg-black/40 p-4 text-sm leading-6 text-slate-200">
                 <code>{markdown}</code>
               </pre>
             </div>
