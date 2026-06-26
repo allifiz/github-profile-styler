@@ -2,6 +2,15 @@ export type ThemeId = 'anime-neon' | 'dark-hacker' | 'cyberpunk';
 
 export type BadgeStyle = 'flat' | 'flat-square' | 'plastic' | 'for-the-badge' | 'social';
 export type VisitorProvider = 'komarev' | 'anime-counter' | 'profile-counter';
+export type SectionId =
+  | 'hero'
+  | 'about'
+  | 'techStack'
+  | 'githubStats'
+  | 'streakStats'
+  | 'trophy'
+  | 'quote'
+  | 'devJoke';
 export type StatsTheme =
   | 'radical'
   | 'tokyonight'
@@ -73,8 +82,20 @@ export type ProfileForm = {
   badgeStyle: BadgeStyle;
   badgeColor: string;
   logoColor: string;
+  sectionOrder: SectionId[];
   plugins: PluginConfig;
 };
+
+export const defaultSectionOrder: SectionId[] = [
+  'hero',
+  'about',
+  'techStack',
+  'githubStats',
+  'streakStats',
+  'trophy',
+  'quote',
+  'devJoke',
+];
 
 export const themes: Record<
   ThemeId,
@@ -182,16 +203,13 @@ const badgeLogo = (tech: string) =>
   encodeURIComponent(tech.toLowerCase().replace(/\./g, 'dot').replace(/\s+/g, '-'));
 
 const cleanColor = (color: string, fallback: string) => color.trim().replace('#', '') || fallback;
-
 const cleanTrophyTheme = (theme: string) => trophyThemeMap[theme] || 'radical';
-
 const cleanTrophyColumns = (columns: number) => {
   if (!Number.isFinite(columns)) return 6;
   return Math.min(Math.max(Math.round(columns), 3), 8);
 };
 
 const renderSection = (title: string, content: string) => `## ${title}\n\n${content}`;
-
 const renderCenteredImage = (src: string, alt: string, extra = '') => `<p align="center">\n  <img ${extra} src="${src}" alt="${alt}" />\n</p>`;
 
 const generateVisitorCounter = (username: string, form: ProfileForm, selectedTheme: (typeof themes)[ThemeId]) => {
@@ -262,15 +280,15 @@ export function generateMarkdown(form: ProfileForm) {
   const logoColor = cleanColor(form.logoColor, 'white');
   const statsTheme = form.plugins.githubStats.theme || selectedTheme.readmeTheme;
 
-  const sections: string[] = [];
+  const sectionMap = new Map<SectionId, string>();
 
-  sections.push(`<h1 align="center">${selectedTheme.accentEmoji} Hi, I'm ${name}</h1>`);
+  const heroParts = [`<h1 align="center">${selectedTheme.accentEmoji} Hi, I'm ${name}</h1>`];
 
   if (form.plugins.typingSvg.enabled) {
     const font = encodeURIComponent(form.plugins.typingSvg.font || 'Fira Code').replace(/%20/g, '+');
     const typingColor = cleanColor(form.plugins.typingSvg.color, badgeColor);
     const center = form.plugins.typingSvg.center ? 'true' : 'false';
-    sections.push(
+    heroParts.push(
       renderCenteredImage(
         `https://readme-typing-svg.demolab.com?font=${font}&pause=1000&color=${typingColor}&center=${center}&width=520&lines=${typingQuery}`,
         'Typing SVG',
@@ -279,16 +297,15 @@ export function generateMarkdown(form: ProfileForm) {
   }
 
   if (form.plugins.visitorCounter.enabled) {
-    sections.push(generateVisitorCounter(username, form, selectedTheme));
+    heroParts.push(generateVisitorCounter(username, form, selectedTheme));
   }
 
   const socialBadges = form.plugins.socialBadges.enabled
     ? generateSocialBadges({ ...form, website, twitter, linkedin, email, instagram, discord }, badgeColor, logoColor)
     : '';
 
-  if (socialBadges) sections.push(socialBadges);
-
-  sections.push('---');
+  if (socialBadges) heroParts.push(socialBadges);
+  sectionMap.set('hero', heroParts.join('\n\n'));
 
   const socialLinks = [
     website ? `- 🌐 Website: ${website}` : '',
@@ -302,7 +319,7 @@ export function generateMarkdown(form: ProfileForm) {
     .filter(Boolean)
     .join('\n');
 
-  sections.push(renderSection(`${selectedTheme.accentEmoji} About Me`, `${bio}\n\n${socialLinks}`.trim()));
+  sectionMap.set('about', renderSection(`${selectedTheme.accentEmoji} About Me`, `${bio}\n\n${socialLinks}`.trim()));
 
   const techBadges = techStack
     .map(
@@ -311,9 +328,7 @@ export function generateMarkdown(form: ProfileForm) {
     )
     .join('\n');
 
-  if (techBadges) {
-    sections.push(renderSection('⚙️ Tech Stack', techBadges));
-  }
+  if (techBadges) sectionMap.set('techStack', renderSection('⚙️ Tech Stack', techBadges));
 
   const statImages: string[] = [];
 
@@ -330,11 +345,12 @@ export function generateMarkdown(form: ProfileForm) {
   }
 
   if (statImages.length) {
-    sections.push(renderSection('📊 GitHub Stats', `<p align="center">\n  ${statImages.join('\n  ')}\n</p>`));
+    sectionMap.set('githubStats', renderSection('📊 GitHub Stats', `<p align="center">\n  ${statImages.join('\n  ')}\n</p>`));
   }
 
   if (form.plugins.streakStats.enabled) {
-    sections.push(
+    sectionMap.set(
+      'streakStats',
       renderSection(
         '🔥 Contribution Streak',
         renderCenteredImage(
@@ -349,7 +365,8 @@ export function generateMarkdown(form: ProfileForm) {
     const trophyTheme = cleanTrophyTheme(form.plugins.trophy.theme);
     const trophyColumns = cleanTrophyColumns(form.plugins.trophy.columns);
 
-    sections.push(
+    sectionMap.set(
+      'trophy',
       renderSection(
         '🏆 GitHub Trophy',
         renderCenteredImage(
@@ -361,7 +378,8 @@ export function generateMarkdown(form: ProfileForm) {
   }
 
   if (form.plugins.quote.enabled) {
-    sections.push(
+    sectionMap.set(
+      'quote',
       renderSection(
         '💭 Dev Quote',
         renderCenteredImage(
@@ -373,7 +391,8 @@ export function generateMarkdown(form: ProfileForm) {
   }
 
   if (form.plugins.devJoke.enabled) {
-    sections.push(
+    sectionMap.set(
+      'devJoke',
       renderSection(
         '😂 Random Dev Joke',
         renderCenteredImage(`https://readme-jokes.vercel.app/api?theme=${statsTheme}`, 'Dev joke'),
@@ -381,8 +400,17 @@ export function generateMarkdown(form: ProfileForm) {
     );
   }
 
-  sections.push('---');
-  sections.push('<p align="center">\n  <i>Generated with GitHub Profile Styler</i>\n</p>');
+  const safeSectionOrder = [
+    ...(form.sectionOrder?.length ? form.sectionOrder : defaultSectionOrder),
+    ...defaultSectionOrder.filter((sectionId) => !form.sectionOrder?.includes(sectionId)),
+  ];
 
-  return sections.filter(Boolean).join('\n\n');
+  const orderedSections = safeSectionOrder
+    .map((sectionId) => sectionMap.get(sectionId))
+    .filter(Boolean) as string[];
+
+  orderedSections.push('---');
+  orderedSections.push('<p align="center">\n  <i>Generated with GitHub Profile Styler</i>\n</p>');
+
+  return orderedSections.join('\n\n');
 }
