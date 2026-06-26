@@ -1,7 +1,7 @@
 'use client';
 
 import { Copy, Download, ExternalLink, GripVertical, Sparkles } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import { toast } from 'sonner';
@@ -34,6 +34,8 @@ type EditableProfileField =
   | 'discord'
   | 'techStack'
   | 'typingLines';
+
+const STORAGE_KEY = 'github-profile-styler-form-v1';
 
 const tabs: Array<{ id: TabId; label: string; helper: string }> = [
   { id: 'profile', label: '1. Profile', helper: 'Identity and links' },
@@ -154,6 +156,35 @@ const toPickerColor = (value: string, fallback: string) => {
   return `#${hex}`;
 };
 
+const mergeStoredForm = (stored: Partial<ProfileForm>): ProfileForm => {
+  const storedPlugins = stored.plugins ?? {};
+  const storedOrder = Array.isArray(stored.sectionOrder) ? stored.sectionOrder : defaultSectionOrder;
+  const safeSectionOrder = [
+    ...storedOrder.filter((sectionId): sectionId is SectionId => defaultSectionOrder.includes(sectionId as SectionId)),
+    ...defaultSectionOrder.filter((sectionId) => !storedOrder.includes(sectionId)),
+  ];
+
+  return {
+    ...defaultForm,
+    ...stored,
+    sectionOrder: safeSectionOrder,
+    plugins: {
+      ...defaultPlugins,
+      ...storedPlugins,
+      typingSvg: { ...defaultPlugins.typingSvg, ...storedPlugins.typingSvg },
+      visitorCounter: { ...defaultPlugins.visitorCounter, ...storedPlugins.visitorCounter },
+      githubStats: { ...defaultPlugins.githubStats, ...storedPlugins.githubStats },
+      topLanguages: { ...defaultPlugins.topLanguages, ...storedPlugins.topLanguages },
+      streakStats: { ...defaultPlugins.streakStats, ...storedPlugins.streakStats },
+      trophy: { ...defaultPlugins.trophy, ...storedPlugins.trophy },
+      advancedStats: { ...defaultPlugins.advancedStats, ...storedPlugins.advancedStats },
+      quote: { ...defaultPlugins.quote, ...storedPlugins.quote },
+      devJoke: { ...defaultPlugins.devJoke, ...storedPlugins.devJoke },
+      socialBadges: { ...defaultPlugins.socialBadges, ...storedPlugins.socialBadges },
+    },
+  };
+};
+
 function PanelHeader({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 sm:p-5">
@@ -229,9 +260,26 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('profile');
   const [draggingSection, setDraggingSection] = useState<SectionId | null>(null);
   const [showSectionOrder, setShowSectionOrder] = useState(false);
+  const [hasHydrated, setHasHydrated] = useState(false);
   const markdown = useMemo(() => generateMarkdown(form), [form]);
   const selectedSkills = useMemo(() => parseSkills(form.techStack), [form.techStack]);
   const selectedTheme = themes[form.theme];
+
+  useEffect(() => {
+    try {
+      const savedForm = window.localStorage.getItem(STORAGE_KEY);
+      if (savedForm) setForm(mergeStoredForm(JSON.parse(savedForm) as Partial<ProfileForm>));
+    } catch {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } finally {
+      setHasHydrated(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
+  }, [form, hasHydrated]);
 
   const updateField = (key: EditableProfileField, value: string) => setForm((current) => ({ ...current, [key]: value }));
   const updatePlugin = <K extends keyof ProfileForm['plugins']>(plugin: K, value: Partial<ProfileForm['plugins'][K]>) => setForm((current) => ({ ...current, plugins: { ...current.plugins, [plugin]: { ...current.plugins[plugin], ...value } } }));
@@ -259,6 +307,11 @@ export default function Home() {
     nextOrder.splice(nextIndex, 0, removed);
     return { ...current, sectionOrder: nextOrder };
   });
+  const resetForm = () => {
+    window.localStorage.removeItem(STORAGE_KEY);
+    setForm(defaultForm);
+    toast.success('Saved form reset.');
+  };
   const copyMarkdown = async () => {
     await navigator.clipboard.writeText(markdown);
     toast.success('Markdown copied. Paste it into your GitHub profile README.');
@@ -284,10 +337,12 @@ export default function Home() {
               <div className="mb-3 inline-flex max-w-full items-center gap-2 rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-3 py-1 text-xs text-fuchsia-100 sm:text-sm"><Sparkles size={16} />Interactive GitHub README builder</div>
               <h1 className="text-3xl font-black tracking-tight sm:text-5xl">GitHub Profile <span className="neon-text">Styler</span></h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">Build a profile README like a visual editor: fill profile info, pick skills, choose plugins, reorder sections, then copy or download README.md.</p>
+              <div className="mt-4 inline-flex rounded-full border border-emerald-300/20 bg-emerald-400/10 px-3 py-1 text-xs font-bold text-emerald-100">Auto saved locally</div>
             </div>
             <div className="grid w-full gap-2 sm:grid-cols-2 lg:w-72 lg:grid-cols-1">
               <button type="button" onClick={copyMarkdown} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-fuchsia-500 px-5 py-3 font-bold text-white shadow-lg shadow-fuchsia-500/20 transition hover:-translate-y-0.5 hover:bg-fuchsia-400"><Copy size={18} />Copy Markdown</button>
               <button type="button" onClick={downloadMarkdown} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-300/30 bg-cyan-400/10 px-5 py-3 font-semibold text-cyan-100 transition hover:-translate-y-0.5 hover:bg-cyan-400/15"><Download size={18} />Download README.md</button>
+              <button type="button" onClick={resetForm} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-300/30 bg-rose-400/10 px-5 py-3 font-semibold text-rose-100 transition hover:-translate-y-0.5 hover:bg-rose-400/15">Reset Form</button>
               <a href="https://github.com/allifiz/github-profile-styler" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-semibold transition hover:-translate-y-0.5 hover:bg-white/15 sm:col-span-2 lg:col-span-1"><ExternalLink size={18} />Star on GitHub</a>
             </div>
           </div>
