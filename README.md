@@ -1,7 +1,7 @@
 # GitHub Profile Styler
 
 <p align="center">
-  <b>Anime/cyberpunk GitHub profile README generator with live preview, badges, stats, and typing SVG.</b>
+  <b>Anime/cyberpunk GitHub profile README generator with live preview, selectable plugins, badge styles, stats cards, counters, and typing SVG.</b>
 </p>
 
 <p align="center">
@@ -12,6 +12,7 @@
 
 <p align="center">
   <a href="#features">Features</a> ·
+  <a href="#plugins">Plugins</a> ·
   <a href="#themes">Themes</a> ·
   <a href="#getting-started">Getting Started</a> ·
   <a href="#roadmap">Roadmap</a>
@@ -21,22 +22,42 @@
 
 ## Why?
 
-A lot of developers want a cool GitHub profile README, but setting up badges, stats cards, typing SVG, and markdown layout manually can be annoying.
+A lot of developers want a cool GitHub profile README, but setting up badges, stats cards, typing SVG, visitor counters, and markdown layout manually can be annoying.
 
-**GitHub Profile Styler** helps you generate a polished profile README in seconds. Fill the form, pick a theme, preview the result, then copy the markdown into your GitHub profile repository.
+**GitHub Profile Styler** helps you generate a polished profile README in seconds. Fill the form, pick a theme, toggle the plugins you want, preview the result, then copy the markdown into your GitHub profile repository.
 
 ## Features
 
 - 🎨 Anime / cyberpunk / hacker profile themes
+- 🧩 Toggle-based README plugin system
 - 👀 Live markdown preview
 - 📋 One-click copy markdown
 - 🧑‍💻 GitHub username, bio, role, location, website, and social fields
-- ⚙️ Tech stack badge generator
+- 🪪 Badge style selector: `flat`, `flat-square`, `plastic`, `for-the-badge`, `social`
+- ⚙️ Tech stack badge generator with custom badge and logo color
 - ⌨️ Typing SVG generator
+- 👁️ Visitor counter providers: Komarev, anime counter, and profile counter
 - 📊 GitHub stats and top languages cards
 - 🔥 Contribution streak card
+- 🏆 GitHub trophy card
+- 💭 Dev quote card
+- 😂 Random dev joke card
 - 🚀 No login required
 - 🧩 Easy to fork and customize
+
+## Plugins
+
+| Plugin | Description |
+| --- | --- |
+| Typing SVG | Animated typing intro below your profile title |
+| Visitor Counter | Komarev, anime counter, or classic profile counter |
+| Social Badges | Website, LinkedIn, X, Instagram, email, and Discord badges |
+| GitHub Stats | GitHub stats card with theme options |
+| Top Languages | Most used languages card |
+| Streak Stats | Contribution streak card |
+| GitHub Trophy | Achievement trophy row |
+| Dev Quote | Random developer quote card |
+| Dev Joke | Random developer joke card |
 
 ## Themes
 
@@ -92,10 +113,15 @@ lib/
 - [x] Live markdown preview
 - [x] Copy markdown button
 - [x] GitHub stats, streak, badges, and typing SVG
+- [x] Plugin toggle system
+- [x] Visitor counter provider selector
+- [x] Badge style selector
+- [x] Trophy, quote, and joke plugins
 - [ ] Add more anime/cyberpunk themes
 - [ ] Add drag-and-drop section ordering
 - [ ] Add export preview as image
 - [ ] Add local template saving
+- [ ] Add snake contribution workflow generator
 - [ ] Add GitHub OAuth profile import
 - [ ] Add deploy demo link
 
@@ -108,6 +134,7 @@ Good first ideas:
 - Add new README sections
 - Add more badge styles
 - Add more theme presets
+- Add more plugin providers
 - Improve mobile layout
 - Add preview screenshot to this README
 
