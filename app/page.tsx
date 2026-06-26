@@ -44,8 +44,27 @@ const tabs: Array<{ id: TabId; label: string; helper: string }> = [
 ];
 
 const badgeStyles: BadgeStyle[] = ['flat', 'flat-square', 'plastic', 'for-the-badge', 'social'];
-const statsThemes: StatsTheme[] = ['radical', 'tokyonight', 'merko', 'dracula', 'github_dark', 'transparent', 'synthwave', 'gruvbox', 'onedark'];
-const typingFonts = ['Fira Code', 'JetBrains Mono', 'Poppins', 'Roboto Mono', 'Source Code Pro', 'Cascadia Code', 'Space Mono', 'Ubuntu Mono'];
+const statsThemes: StatsTheme[] = [
+  'radical',
+  'tokyonight',
+  'merko',
+  'dracula',
+  'github_dark',
+  'transparent',
+  'synthwave',
+  'gruvbox',
+  'onedark',
+];
+const typingFonts = [
+  'Fira Code',
+  'JetBrains Mono',
+  'Poppins',
+  'Roboto Mono',
+  'Source Code Pro',
+  'Cascadia Code',
+  'Space Mono',
+  'Ubuntu Mono',
+];
 const visitorProviders: Array<{ label: string; value: VisitorProvider }> = [
   { label: 'Komarev counter', value: 'komarev' },
   { label: 'Anime counter', value: 'anime-counter' },
@@ -74,14 +93,25 @@ const city3dThemes: Array<{ label: string; value: City3DTheme }> = [
 ];
 
 const skillGroups = [
-  { title: 'Programming Languages', skills: ['JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'PHP', 'Go', 'Rust', 'Swift'] },
-  { title: 'Frontend', skills: ['React', 'Next.js', 'Vue.js', 'Angular', 'HTML5', 'CSS3', 'Tailwind CSS', 'Bootstrap'] },
-  { title: 'Backend', skills: ['Node.js', 'Express.js', 'NestJS', 'Django', 'Flask', 'Spring Boot', 'Laravel', 'Fastify'] },
+  {
+    title: 'Programming Languages',
+    skills: ['JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'PHP', 'Go', 'Rust', 'Swift'],
+  },
+  {
+    title: 'Frontend',
+    skills: ['React', 'Next.js', 'Vue.js', 'Angular', 'HTML5', 'CSS3', 'Tailwind CSS', 'Bootstrap'],
+  },
+  {
+    title: 'Backend',
+    skills: ['Node.js', 'Express.js', 'NestJS', 'Django', 'Flask', 'Spring Boot', 'Laravel', 'Fastify'],
+  },
   { title: 'Database', skills: ['PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'SQLite', 'Prisma'] },
-  { title: 'DevOps & Cloud', skills: ['Docker', 'Kubernetes', 'AWS', 'Google Cloud', 'Azure', 'Vercel', 'PM2', 'Nginx'] },
+  {
+    title: 'DevOps & Cloud',
+    skills: ['Docker', 'Kubernetes', 'AWS', 'Google Cloud', 'Azure', 'Vercel', 'PM2', 'Nginx'],
+  },
   { title: 'Tools', skills: ['Git', 'GitHub', 'VS Code', 'Figma', 'Postman', 'Vite', 'Linux', 'Bash'] },
 ];
-
 const popularSkills = ['TypeScript', 'Node.js', 'NestJS', 'PostgreSQL', 'Prisma', 'React', 'Next.js', 'Tailwind CSS'];
 
 const sectionCards: Record<SectionId, { title: string; description: string }> = {
@@ -228,6 +258,7 @@ export default function Home() {
   const [form, setForm] = useState<ProfileForm>(defaultForm);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
   const [draggingSection, setDraggingSection] = useState<SectionId | null>(null);
+  const [showSectionOrder, setShowSectionOrder] = useState(false);
   const markdown = useMemo(() => generateMarkdown(form), [form]);
   const selectedSkills = useMemo(() => parseSkills(form.techStack), [form.techStack]);
   const selectedTheme = themes[form.theme];
@@ -298,8 +329,8 @@ export default function Home() {
           </aside>
           <section className="grid min-w-0 gap-6 lg:sticky lg:top-6 lg:self-start">
             <div className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur">
-              <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><h2 className="text-xl font-black">Preview</h2><p className="text-sm text-slate-300">Drag the section cards below to reorder your README.</p></div><div className="flex flex-wrap gap-2"><button type="button" onClick={copyMarkdown} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-fuchsia-500 px-4 py-3 font-bold text-white"><Copy size={18} />Copy</button><button type="button" onClick={downloadMarkdown} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-300/30 bg-cyan-400/10 px-4 py-3 font-bold text-cyan-100"><Download size={18} />Raw</button></div></div>
-              <div className="mb-4 rounded-2xl border border-white/10 bg-black/20 p-4"><div className="mb-3 flex flex-col justify-between gap-2 sm:flex-row sm:items-center"><div><h3 className="font-black">Section Order</h3><p className="text-xs text-slate-400">Drag and drop to change markdown order.</p></div><button type="button" onClick={() => setForm((current) => ({ ...current, sectionOrder: defaultSectionOrder }))} className="rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-xs font-bold text-slate-200">Reset order</button></div><div className="grid gap-2">{form.sectionOrder.map((sectionId, index) => { const section = sectionCards[sectionId]; const dragging = draggingSection === sectionId; return <div key={sectionId} draggable onDragStart={(event) => { event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', sectionId); setDraggingSection(sectionId); }} onDragEnd={() => setDraggingSection(null)} onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; }} onDrop={(event) => { event.preventDefault(); const draggedSection = event.dataTransfer.getData('text/plain') as SectionId; moveSection(draggedSection, sectionId); setDraggingSection(null); }} className={`group flex cursor-grab items-center gap-3 rounded-2xl border p-3 ${dragging ? 'border-fuchsia-300 bg-fuchsia-400/20 opacity-60' : 'border-white/10 bg-white/[0.04]'}`}><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-xs font-black text-slate-200">{index + 1}</div><GripVertical className="shrink-0 text-slate-400" size={18} /><div className="min-w-0"><div className="font-bold text-white">{section.title}</div><p className="truncate text-xs text-slate-400">{section.description}</p></div></div>; })}</div></div>
+              <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><h2 className="text-xl font-black">Preview</h2><p className="text-sm text-slate-300">Preview stays clean. Open section order only when you want to reorder.</p></div><div className="flex flex-wrap gap-2"><button type="button" onClick={() => setShowSectionOrder((current) => !current)} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 font-bold text-slate-100 hover:bg-white/15">{showSectionOrder ? 'Hide Section Order' : 'Show Section Order'}</button><button type="button" onClick={copyMarkdown} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-fuchsia-500 px-4 py-3 font-bold text-white"><Copy size={18} />Copy</button><button type="button" onClick={downloadMarkdown} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-300/30 bg-cyan-400/10 px-4 py-3 font-bold text-cyan-100"><Download size={18} />Raw</button></div></div>
+              {showSectionOrder ? <div className="mb-4 rounded-2xl border border-white/10 bg-black/20 p-4"><div className="mb-3 flex flex-col justify-between gap-2 sm:flex-row sm:items-center"><div><h3 className="font-black">Section Order</h3><p className="text-xs text-slate-400">Drag and drop to change markdown order.</p></div><button type="button" onClick={() => setForm((current) => ({ ...current, sectionOrder: defaultSectionOrder }))} className="rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-xs font-bold text-slate-200">Reset order</button></div><div className="grid gap-2">{form.sectionOrder.map((sectionId, index) => { const section = sectionCards[sectionId]; const dragging = draggingSection === sectionId; return <div key={sectionId} draggable onDragStart={(event) => { event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', sectionId); setDraggingSection(sectionId); }} onDragEnd={() => setDraggingSection(null)} onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; }} onDrop={(event) => { event.preventDefault(); const draggedSection = event.dataTransfer.getData('text/plain') as SectionId; moveSection(draggedSection, sectionId); setDraggingSection(null); }} className={`group flex cursor-grab items-center gap-3 rounded-2xl border p-3 ${dragging ? 'border-fuchsia-300 bg-fuchsia-400/20 opacity-60' : 'border-white/10 bg-white/[0.04]'}`}><div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-xs font-black text-slate-200">{index + 1}</div><GripVertical className="shrink-0 text-slate-400" size={18} /><div className="min-w-0"><div className="font-bold text-white">{section.title}</div><p className="truncate text-xs text-slate-400">{section.description}</p></div></div>; })}</div></div> : null}
               <article className="preview max-h-[620px] min-w-0 max-w-full overflow-auto rounded-2xl border border-white/10 bg-[#0d0d1f] p-5"><ReactMarkdown rehypePlugins={[rehypeRaw]}>{markdown}</ReactMarkdown></article>
             </div>
             <details className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-[#0d0d1f] p-5"><summary className="cursor-pointer text-lg font-black">README.md</summary><p className="mt-2 text-sm text-slate-300">Copy or download this raw markdown into your GitHub profile repository.</p><div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={copyMarkdown} className="rounded-xl bg-fuchsia-500 px-3 py-2 text-xs font-bold text-white">Copy</button><button type="button" onClick={downloadMarkdown} className="rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-3 py-2 text-xs font-bold text-cyan-100">Download Raw</button></div><pre className="mt-4 max-h-[420px] max-w-full overflow-auto whitespace-pre-wrap break-words rounded-2xl border border-white/10 bg-black/40 p-4 text-sm leading-6 text-slate-200"><code>{markdown}</code></pre></details>
