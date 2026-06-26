@@ -119,7 +119,7 @@ export const defaultPlugins: PluginConfig = {
   visitorCounter: {
     enabled: true,
     provider: 'komarev',
-    animeTheme: 'rule34',
+    animeTheme: 'moebooru',
   },
   githubStats: {
     enabled: true,
@@ -151,6 +151,18 @@ export const defaultPlugins: PluginConfig = {
   },
 };
 
+const trophyThemeMap: Record<string, string> = {
+  radical: 'radical',
+  tokyonight: 'tokyonight',
+  dracula: 'dracula',
+  gruvbox: 'gruvbox',
+  onedark: 'onedark',
+  merko: 'matrix',
+  github_dark: 'darkhub',
+  transparent: 'flat',
+  synthwave: 'synthwave',
+};
+
 const normalizeLines = (value: string) =>
   value
     .split('\n')
@@ -170,6 +182,13 @@ const badgeLogo = (tech: string) =>
   encodeURIComponent(tech.toLowerCase().replace(/\./g, 'dot').replace(/\s+/g, '-'));
 
 const cleanColor = (color: string, fallback: string) => color.trim().replace('#', '') || fallback;
+
+const cleanTrophyTheme = (theme: string) => trophyThemeMap[theme] || 'radical';
+
+const cleanTrophyColumns = (columns: number) => {
+  if (!Number.isFinite(columns)) return 6;
+  return Math.min(Math.max(Math.round(columns), 3), 8);
+};
 
 const renderSection = (title: string, content: string) => `## ${title}\n\n${content}`;
 
@@ -327,11 +346,14 @@ export function generateMarkdown(form: ProfileForm) {
   }
 
   if (form.plugins.trophy.enabled) {
+    const trophyTheme = cleanTrophyTheme(form.plugins.trophy.theme);
+    const trophyColumns = cleanTrophyColumns(form.plugins.trophy.columns);
+
     sections.push(
       renderSection(
         '🏆 GitHub Trophy',
         renderCenteredImage(
-          `https://github-profile-trophy.vercel.app/?username=${username}&theme=${form.plugins.trophy.theme}&no-frame=true&row=1&column=${form.plugins.trophy.columns}`,
+          `https://github-profile-trophy.vercel.app/?username=${username}&theme=${trophyTheme}&no-frame=true&row=1&column=${trophyColumns}`,
           'GitHub trophy',
         ),
       ),
