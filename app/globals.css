@@ -52,10 +52,30 @@ textarea {
   box-shadow: 0 0 0 4px rgba(244, 114, 182, 0.12);
 }
 
+.preview {
+  overflow-x: hidden;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
 .preview h1,
 .preview h2,
 .preview h3 {
   color: white;
+  margin: 0.75rem 0;
+}
+
+.preview p {
+  margin: 0.75rem 0;
+}
+
+.preview p[align='center'] {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
 }
 
 .preview a {
@@ -65,6 +85,12 @@ textarea {
 .preview img {
   display: inline-block;
   max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.preview p[align='center'] img {
+  max-width: min(100%, 430px);
 }
 
 .preview code {
