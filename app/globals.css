@@ -1,0 +1,84 @@
+@import 'tailwindcss';
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #070713;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.neon-text {
+  background: linear-gradient(90deg, #ff4ecd, #00d9ff, #a78bfa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 28px rgba(255, 78, 205, 0.35);
+}
+
+.input {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.85rem 1rem;
+  color: white;
+  outline: none;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.input::placeholder {
+  color: rgba(203, 213, 225, 0.55);
+}
+
+.input:focus {
+  border-color: rgba(244, 114, 182, 0.75);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 0 4px rgba(244, 114, 182, 0.12);
+}
+
+.preview h1,
+.preview h2,
+.preview h3 {
+  color: white;
+}
+
+.preview a {
+  color: #67e8f9;
+}
+
+.preview img {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.preview code {
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.12rem 0.35rem;
+  color: #f0abfc;
+}
+
+.preview hr {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+::selection {
+  background: rgba(244, 114, 182, 0.45);
+  color: white;
+}
