@@ -16,6 +16,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-markdown": "latest",
+    "rehype-raw": "latest",
     "sonner": "latest"
   },
   "devDependencies": {
