@@ -58,6 +58,25 @@ summary {
   box-shadow: 0 0 0 4px rgba(244, 114, 182, 0.12);
 }
 
+input[type='color'] {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+input[type='color']::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type='color']::-webkit-color-swatch {
+  border: none;
+  border-radius: 0.65rem;
+}
+
+input[type='color']::-moz-color-swatch {
+  border: none;
+  border-radius: 0.65rem;
+}
+
 select.input option {
   background: #111122;
   color: white;
