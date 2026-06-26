@@ -1,6 +1,15 @@
 'use client';
 
-import { Copy, ExternalLink, GripVertical, Palette, Plug, Sparkles, Wand2 } from 'lucide-react';
+import {
+  Copy,
+  Download,
+  ExternalLink,
+  GripVertical,
+  Palette,
+  Plug,
+  Sparkles,
+  Wand2,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
@@ -18,7 +27,7 @@ import {
   VisitorProvider,
 } from '@/lib/generate-markdown';
 
-type TabId = 'profile' | 'design' | 'plugins' | 'advanced';
+type TabId = 'profile' | 'skills' | 'design' | 'plugins' | 'advanced';
 type PluginKey = keyof ProfileForm['plugins'];
 type EditableProfileField =
   | 'name'
@@ -37,8 +46,9 @@ type EditableProfileField =
 
 const tabs: Array<{ id: TabId; label: string; helper: string }> = [
   { id: 'profile', label: '1. Profile', helper: 'Basic identity and links' },
-  { id: 'design', label: '2. Design', helper: 'Theme, badges, colors' },
-  { id: 'plugins', label: '3. Plugins', helper: 'Turn sections on or off' },
+  { id: 'skills', label: '2. Skills', helper: 'Pick languages and tools' },
+  { id: 'design', label: '3. Design', helper: 'Theme, badges, colors' },
+  { id: 'plugins', label: '4. Plugins', helper: 'Turn sections on or off' },
   { id: 'advanced', label: 'Advanced', helper: 'Fine tuning' },
 ];
 
@@ -90,6 +100,44 @@ const typingFonts = [
   'Ubuntu Mono',
 ];
 
+const skillGroups: Array<{ title: string; skills: string[] }> = [
+  {
+    title: 'Programming Languages',
+    skills: ['JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'PHP', 'Go', 'Rust', 'Swift'],
+  },
+  {
+    title: 'Frontend',
+    skills: ['React', 'Next.js', 'Vue.js', 'Angular', 'HTML5', 'CSS3', 'Tailwind CSS', 'Bootstrap'],
+  },
+  {
+    title: 'Backend',
+    skills: ['Node.js', 'Express.js', 'NestJS', 'Django', 'Flask', 'Spring Boot', 'Laravel', 'Fastify'],
+  },
+  {
+    title: 'Database',
+    skills: ['PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'SQLite', 'Prisma'],
+  },
+  {
+    title: 'DevOps & Cloud',
+    skills: ['Docker', 'Kubernetes', 'AWS', 'Google Cloud', 'Azure', 'Vercel', 'PM2', 'Nginx'],
+  },
+  {
+    title: 'Tools',
+    skills: ['Git', 'GitHub', 'VS Code', 'Figma', 'Postman', 'Vite', 'Linux', 'Bash'],
+  },
+];
+
+const popularSkills = [
+  'TypeScript',
+  'Node.js',
+  'NestJS',
+  'PostgreSQL',
+  'Prisma',
+  'React',
+  'Next.js',
+  'Tailwind CSS',
+];
+
 const sectionCards: Record<SectionId, { title: string; description: string }> = {
   hero: {
     title: 'Intro / Hero',
@@ -137,7 +185,7 @@ const defaultForm: ProfileForm = {
   email: '',
   instagram: '',
   discord: '',
-  techStack: 'TypeScript, Node.js, NestJS, PostgreSQL, Prisma, React, Next.js',
+  techStack: popularSkills.join(', '),
   typingLines: 'Backend Developer\nAI Bot Builder\nOpen Source Enjoyer\nAnime Neon Hacker',
   theme: 'anime-neon',
   badgeStyle: 'for-the-badge',
@@ -272,6 +320,11 @@ const linkFields: Array<{
 ];
 
 const normalizeHex = (value: string) => value.replace('#', '').slice(0, 6);
+const parseSkills = (value: string) =>
+  value
+    .split(',')
+    .map((skill) => skill.trim())
+    .filter(Boolean);
 
 const toPickerColor = (value: string, fallback: string) => {
   const cleanValue = normalizeHex(value);
@@ -468,6 +521,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('profile');
   const [draggingSection, setDraggingSection] = useState<SectionId | null>(null);
   const markdown = useMemo(() => generateMarkdown(form), [form]);
+  const selectedSkills = useMemo(() => parseSkills(form.techStack), [form.techStack]);
 
   const updateField = (key: EditableProfileField, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -488,6 +542,21 @@ export default function Home() {
 
   const togglePlugin = (plugin: PluginKey) => {
     updatePlugin(plugin, { enabled: !form.plugins[plugin].enabled });
+  };
+
+  const toggleSkill = (skill: string) => {
+    setForm((current) => {
+      const skills = parseSkills(current.techStack);
+      const exists = skills.includes(skill);
+      const nextSkills = exists
+        ? skills.filter((item) => item !== skill)
+        : [...skills, skill];
+
+      return {
+        ...current,
+        techStack: nextSkills.join(', '),
+      };
+    });
   };
 
   const moveSection = (fromSection: SectionId, toSection: SectionId) => {
@@ -515,6 +584,17 @@ export default function Home() {
     toast.success('Markdown copied. Paste it into your GitHub profile README.');
   };
 
+  const downloadMarkdown = () => {
+    const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'README.md';
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success('README.md downloaded.');
+  };
+
   const selectedTheme = themes[form.theme];
 
   return (
@@ -527,14 +607,14 @@ export default function Home() {
             <div>
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-fuchsia-400/10 px-3 py-1 text-sm text-fuchsia-100">
                 <Sparkles size={16} />
-                Beginner-friendly GitHub README generator
+                Interactive GitHub README builder
               </div>
               <h1 className="text-3xl font-black tracking-tight sm:text-5xl">
                 GitHub Profile <span className="neon-text">Styler</span>
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-                Build a clean profile README step by step. Start with your profile,
-                choose a design, turn on plugins, reorder sections, then copy the markdown.
+                Build a profile README like a visual editor: fill profile info, pick skills,
+                choose plugins, reorder sections, then copy or download README.md.
               </p>
             </div>
 
@@ -547,11 +627,19 @@ export default function Home() {
                 <Copy size={18} />
                 Copy Markdown
               </button>
+              <button
+                type="button"
+                onClick={downloadMarkdown}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-300/30 bg-cyan-400/10 px-5 py-3 font-semibold text-cyan-100 transition hover:-translate-y-0.5 hover:bg-cyan-400/15"
+              >
+                <Download size={18} />
+                Download README.md
+              </button>
               <a
                 href="https://github.com/allifiz/github-profile-styler"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-semibold transition hover:-translate-y-0.5 hover:bg-white/15"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/10 px-5 py-3 font-semibold transition hover:-translate-y-0.5 hover:bg-white/15 sm:col-span-2 md:col-span-1"
               >
                 <ExternalLink size={18} />
                 Star on GitHub
@@ -566,8 +654,8 @@ export default function Home() {
               <div className="mb-4 flex items-center gap-2">
                 <Wand2 className="text-fuchsia-300" size={22} />
                 <div>
-                  <h2 className="text-xl font-black">Customize</h2>
-                  <p className="text-sm text-slate-400">Follow the steps from top to bottom.</p>
+                  <h2 className="text-xl font-black">Editor</h2>
+                  <p className="text-sm text-slate-400">Build your README step by step.</p>
                 </div>
               </div>
 
@@ -598,7 +686,7 @@ export default function Home() {
               {activeTab === 'profile' ? (
                 <div className="grid gap-5">
                   <PanelHeader
-                    eyebrow="Start here"
+                    eyebrow="Profile essentials"
                     title="Tell people who you are"
                     description="Only name, username, role, and bio are required. Social links are optional, so you can leave them empty."
                   />
@@ -618,7 +706,7 @@ export default function Home() {
                   </div>
 
                   <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-                    <h3 className="mb-3 font-black">Optional links</h3>
+                    <h3 className="mb-3 font-black">Social links</h3>
                     <div className="grid gap-4">
                       {linkFields.map((field) => (
                         <FormInput
@@ -630,6 +718,78 @@ export default function Home() {
                         />
                       ))}
                     </div>
+                  </div>
+                </div>
+              ) : null}
+
+              {activeTab === 'skills' ? (
+                <div className="grid gap-5">
+                  <PanelHeader
+                    eyebrow="Languages and tools"
+                    title="Pick your stack"
+                    description="Click skills to add or remove them. You can still manually edit the text list below."
+                  />
+
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                      <div>
+                        <h3 className="font-black">Selected skills</h3>
+                        <p className="text-xs text-slate-400">{selectedSkills.length} selected</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => updateField('techStack', popularSkills.join(', '))}
+                          className="rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:bg-cyan-400/15"
+                        >
+                          Use popular
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => updateField('techStack', '')}
+                          className="rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-xs font-bold text-slate-200 transition hover:bg-white/15"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+
+                    <textarea
+                      value={form.techStack}
+                      onChange={(event) => updateField('techStack', event.target.value)}
+                      placeholder="TypeScript, Node.js, PostgreSQL"
+                      rows={3}
+                      className="input min-h-24 resize-y"
+                    />
+                  </div>
+
+                  <div className="grid gap-4">
+                    {skillGroups.map((group) => (
+                      <div key={group.title} className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                        <h3 className="mb-3 font-black">{group.title}</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {group.skills.map((skill) => {
+                            const isSelected = selectedSkills.includes(skill);
+
+                            return (
+                              <button
+                                key={skill}
+                                type="button"
+                                onClick={() => toggleSkill(skill)}
+                                className={`rounded-xl border px-3 py-2 text-sm font-bold transition hover:-translate-y-0.5 ${
+                                  isSelected
+                                    ? 'border-fuchsia-300 bg-fuchsia-400/15 text-fuchsia-50 shadow-lg shadow-fuchsia-500/10'
+                                    : 'border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08]'
+                                }`}
+                              >
+                                {isSelected ? '✓ ' : ''}
+                                {skill}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ) : null}
@@ -848,19 +1008,29 @@ export default function Home() {
             <div className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur">
               <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                 <div>
-                  <h2 className="text-xl font-black">Live Preview</h2>
+                  <h2 className="text-xl font-black">Preview</h2>
                   <p className="text-sm text-slate-300">
                     Drag the section cards below to reorder your README.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={copyMarkdown}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-fuchsia-500 px-5 py-3 font-bold text-white shadow-lg shadow-fuchsia-500/20 transition hover:-translate-y-0.5 hover:bg-fuchsia-400"
-                >
-                  <Copy size={18} />
-                  Copy
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={copyMarkdown}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-fuchsia-500 px-4 py-3 font-bold text-white shadow-lg shadow-fuchsia-500/20 transition hover:-translate-y-0.5 hover:bg-fuchsia-400"
+                  >
+                    <Copy size={18} />
+                    Copy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={downloadMarkdown}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-300/30 bg-cyan-400/10 px-4 py-3 font-bold text-cyan-100 transition hover:-translate-y-0.5 hover:bg-cyan-400/15"
+                  >
+                    <Download size={18} />
+                    Raw
+                  </button>
+                </div>
               </div>
 
               <div className="mb-4 rounded-2xl border border-white/10 bg-black/20 p-4">
@@ -937,11 +1107,27 @@ export default function Home() {
 
             <details className="min-w-0 overflow-hidden rounded-3xl border border-white/10 bg-[#0d0d1f] p-5">
               <summary className="cursor-pointer text-lg font-black">
-                Generated Markdown
+                README.md
               </summary>
               <p className="mt-2 text-sm text-slate-300">
-                Copy this into <code>README.md</code> inside your GitHub profile repository.
+                Copy or download this raw markdown into your GitHub profile repository.
               </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={copyMarkdown}
+                  className="rounded-xl bg-fuchsia-500 px-3 py-2 text-xs font-bold text-white transition hover:bg-fuchsia-400"
+                >
+                  Copy
+                </button>
+                <button
+                  type="button"
+                  onClick={downloadMarkdown}
+                  className="rounded-xl border border-cyan-300/30 bg-cyan-400/10 px-3 py-2 text-xs font-bold text-cyan-100 transition hover:bg-cyan-400/15"
+                >
+                  Download Raw
+                </button>
+              </div>
               <pre className="mt-4 max-h-[420px] max-w-full overflow-auto whitespace-pre-wrap break-words rounded-2xl border border-white/10 bg-black/40 p-4 text-sm leading-6 text-slate-200">
                 <code>{markdown}</code>
               </pre>
