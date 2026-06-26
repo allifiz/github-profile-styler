@@ -47,12 +47,16 @@ const statsThemes: StatsTheme[] = ['radical', 'tokyonight', 'merko', 'dracula', 
 const typingFonts = ['Fira Code', 'JetBrains Mono', 'Poppins', 'Roboto Mono', 'Source Code Pro', 'Cascadia Code', 'Space Mono', 'Ubuntu Mono'];
 const counterThemes = [{ label: 'Default visual counter', value: 'moebooru' }, { label: 'Clean counter', value: 'original-new' }, { label: 'Pixel counter', value: 'minecraft' }];
 const city3dThemes: Array<{ label: string; value: City3DTheme }> = [
-  { label: 'Night Rainbow', value: 'night-rainbow' },
-  { label: 'Night Green', value: 'night-green' },
-  { label: 'Night View', value: 'night-view' },
-  { label: 'Green', value: 'green' },
   { label: 'Git Block', value: 'gitblock' },
-  { label: 'Season Animate', value: 'season' },
+  { label: 'Green Animate', value: 'green-animate' },
+  { label: 'Green', value: 'green' },
+  { label: 'Night Green', value: 'night-green' },
+  { label: 'Night Rainbow', value: 'night-rainbow' },
+  { label: 'Night View', value: 'night-view' },
+  { label: 'Season Animate', value: 'season-animate' },
+  { label: 'Season', value: 'season' },
+  { label: 'South Season Animate', value: 'south-season-animate' },
+  { label: 'South Season', value: 'south-season' },
 ];
 
 const skillGroups = [
